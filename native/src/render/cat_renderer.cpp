@@ -33,6 +33,8 @@ constexpr Pt HEAD_ORIGIN{100, 104};
 constexpr Pt EAR_ORIGIN[2] = {{HEAD_SHIFT + HEAD_SCALE * 76, HEAD_SCALE * 52}, {HEAD_SHIFT + HEAD_SCALE * 124, HEAD_SCALE * 52}};
 constexpr Pt WHISKER_ORIGIN[2] = {{HEAD_SHIFT + HEAD_SCALE * 88, HEAD_SCALE * 90}, {HEAD_SHIFT + HEAD_SCALE * 112, HEAD_SCALE * 90}};
 constexpr Pt TAIL_ORIGIN{136, 162};
+/** How far below the drawing's spot the hind feet sit, so the body covers their heels */
+constexpr double FEET_DROP = 3, FEET_IN = 7;
 
 constexpr uint32_t PUPIL = 0x111111;
 
@@ -454,6 +456,14 @@ void CatRenderer::render(const Pose& pose, double nowMs, Image& frame) {
   const double wag = pose.excited ? -8 * wave(nowMs, 350) : 0;
   sprite(frame, "tail", lean * Mat::around(TAIL_ORIGIN.x, TAIL_ORIGIN.y, Mat::rotate(sway) * Mat::rotate(wag)));
 
+  // hind feet tuck under the body, only their tips peek out; they hang when picked up
+  ease(feetY_, dragging_ ? 5 : 0, dt, 60);
+  // each foot moves in towards the middle, so they sit under the body, not beside it
+  for (int side = 0; side < 2; side++) {
+    const Mat inv = body.inverse();
+    const Mask half = [&, side](double x, double y) { return (inv.apply({x, y}).x < PIVOT.x) == (side == 0) ? 1.f : 0.f; };
+    sprite(frame, "feet", body * Mat::translate(side == 0 ? FEET_IN : -FEET_IN, FEET_DROP + feetY_), 1.f, &half);
+  }
   sprite(frame, "torso", body);
 
   // head follows the pointer, droops asleep, leans into petting
@@ -523,9 +533,6 @@ void CatRenderer::render(const Pose& pose, double nowMs, Image& frame) {
     sprite(frame, i == 0 ? "whiskers-l" : "whiskers-r", face * Mat::around(WHISKER_ORIGIN[i].x, WHISKER_ORIGIN[i].y, Mat::rotate(angle)));
   }
 
-  // feet hang when picked up
-  ease(feetY_, dragging_ ? 5 : 0, dt, 60);
-  sprite(frame, "feet", body * Mat::translate(0, feetY_));
 
   // forelegs: springs towards the keys, the mouse or the rest spot
   bool pawsMoving = false;
