@@ -129,14 +129,25 @@ function taperedTail(w0: number, w1: number): string {
   return `M${pts.map((p) => p.a).join(" L")} Q${cap} ${pts[12].b} L${pts.map((p) => p.b).reverse().slice(1).join(" L")} Z`;
 }
 
-const arm = (paw: Paw) => `<g class="arm arm-${paw}" mask="url(#arm-fade)"><path class="limb-edge"/><ellipse class="shoulder" rx="11" ry="15" fill="var(--paw)"/><path class="limb" fill="var(--paw)"/>${pawShape("pad")}</g>`;
+/**
+ * A leg grows out of the body: over the body it lets the fur behind show
+ * through, past the body's edge it is fur colored, and along the forearm it
+ * shades into the paw color. No outline, no shoulder patch, nothing glued on.
+ */
+const arm = (paw: Paw) => `<g class="arm arm-${paw}">
+    <defs><clipPath id="arm-clip-${paw}"><path class="limb"/></clipPath>
+    <linearGradient id="arm-shade-${paw}" class="shade" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="var(--paw)" stop-opacity="0"/><stop offset="1" stop-color="var(--paw)"/></linearGradient></defs>
+    <g clip-path="url(#arm-clip-${paw})"><rect x="-60" y="0" width="320" height="260" fill="var(--body)" mask="url(#outside-body)"/><rect x="-60" y="0" width="320" height="260" fill="url(#arm-shade-${paw})"/></g>
+    ${pawShape("pad")}</g>`;
+
+/** Where the fur turns into paw color, as a fraction of the leg: a crisp sock, or Siamese points darkening slowly */
+const SOCK = { from: 0.5, span: 0.12 }, POINTS = { from: 0.35, span: 0.4 };
 
 /**
- * A foreleg as a filled shape: thick at the shoulder, slimmer at the wrist,
- * bowed a little at the elbow. The outline only runs from the elbow down,
- * so the top blends into the chest.
+ * A foreleg's outline: thick at the shoulder, slimmer at the wrist,
+ * bowed a little at the elbow, with a rounded shoulder.
  */
-function foreleg(s: Point, p: Point, paw: Paw): { limb: string; edge: string } {
+function foreleg(s: Point, p: Point, paw: Paw): string {
   const c = { x: (s.x + p.x) / 2 + (paw === "left" ? 3 : -3), y: (s.y + p.y) / 2 };
   const at = (t: number) => {
     const u = 1 - t;
@@ -150,8 +161,10 @@ function foreleg(s: Point, p: Point, paw: Paw): { limb: string; edge: string } {
   const n = (v: Point) => `${v.x.toFixed(1)} ${v.y.toFixed(1)}`;
   const side = (from: number, key: "a" | "b") => pts.slice(from).map((q) => n(q[key]));
   const limb = `M${side(0, "a").join(" L")} L${side(0, "b").reverse().join(" L")} Z`;
-  const edge = `M${side(4, "a").join(" L")} M${side(4, "b").join(" L")}`;
-  return { limb, edge };
+  // a rounded shoulder on top
+  const cx = s.x, cy = s.y + 3, rx = 9.5, ry = 11;
+  const shoulder = `M${cx - rx} ${cy} A${rx} ${ry} 0 1 0 ${cx + rx} ${cy} A${rx} ${ry} 0 1 0 ${cx - rx} ${cy} Z`;
+  return `${limb} ${shoulder}`;
 }
 
 // Almond eyes: rounder below, the outer corner a little higher than the inner one
@@ -189,11 +202,8 @@ const TEMPLATE = `
 <svg viewBox="-24 0 224 222" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <clipPath id="tail-tip"><rect x="150" y="90" width="50" height="42"/></clipPath>
-    <linearGradient id="arm-fade-g" gradientUnits="userSpaceOnUse" x1="0" y1="114" x2="0" y2="140">
-      <stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/>
-    </linearGradient>
-    <mask id="arm-fade" maskUnits="userSpaceOnUse" x="-60" y="0" width="320" height="260"><rect x="-60" y="0" width="320" height="260" fill="url(#arm-fade-g)"/><path d="${BIB}" fill="#fff" filter="url(#soft-fur)"/></mask>
     <clipPath id="clip-body"><path d="${BODY}"/></clipPath>
+    <mask id="outside-body" maskUnits="userSpaceOnUse" x="-60" y="0" width="320" height="260"><rect x="-60" y="0" width="320" height="260" fill="#fff"/><path d="${BODY}" fill="#000"/></mask>
     <linearGradient id="cap-shine" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ebe5d8"/>
     </linearGradient>
@@ -234,6 +244,10 @@ const TEMPLATE = `
     <g class="p-pointed" clip-path="url(#tail-tip)"><path class="tail-short" d="${taperedTail(4, 3.6)}" fill="var(--accent)"/><path class="tail-long" d="${taperedTail(5.5, 5)}" fill="var(--accent)"/></g>
   </g></g>
   <g class="breath">
+    <g class="feet">
+      <g transform="translate(64 168) rotate(14) scale(1.1)">${pawShape("foot")}</g>
+      <g transform="translate(136 168) rotate(-14) scale(1.1)">${pawShape("foot")}</g>
+    </g>
     <g class="torso"><path d="${BODY}" fill="var(--body)"/>
     <g clip-path="url(#clip-body)">
       <path d="${BIB}" fill="var(--belly)"/>
@@ -271,10 +285,6 @@ const TEMPLATE = `
       </g>
       <ellipse class="pet-zone" cx="100" cy="62" rx="46" ry="40" fill="transparent"/>
     </g></g>
-    <g class="feet">
-      <g transform="translate(57 165) rotate(14) scale(1.1)">${pawShape("foot")}</g>
-      <g transform="translate(143 165) rotate(-14) scale(1.1)">${pawShape("foot")}</g>
-    </g>
     ${arm("left")}${arm("right")}
   </g></g>
   <text class="zzz" x="140" y="40">z z</text>
@@ -307,7 +317,8 @@ export class CatView {
   private paws: Record<Paw, Point> = { left: { ...REST.left }, right: { ...REST.right } };
   private lean = 0;
   private mouseOffset: Point = { x: 0, y: 0 };
-  private readonly arms: Record<Paw, { limb: SVGPathElement; edge: SVGPathElement; shoulder: SVGEllipseElement; pad: SVGGElement }>;
+  private readonly arms: Record<Paw, { limb: SVGPathElement; shade: SVGLinearGradientElement; pad: SVGGElement }>;
+  private pointed = false;
   private readonly leanGroup: SVGGElement;
   private readonly mouse: SVGGElement;
   private readonly keyboard: SVGGElement;
@@ -325,7 +336,7 @@ export class CatView {
     this.keyboard = this.svg.querySelector(".keyboard")!;
     this.touchpad = this.svg.querySelector(".touchpad")!;
     this.useKeyboard(FULL_KEYBOARD);
-    const armOf = (paw: Paw) => ({ limb: this.svg.querySelector<SVGPathElement>(`.arm-${paw} .limb`)!, edge: this.svg.querySelector<SVGPathElement>(`.arm-${paw} .limb-edge`)!, shoulder: this.svg.querySelector<SVGEllipseElement>(`.arm-${paw} .shoulder`)!, pad: this.svg.querySelector<SVGGElement>(`.arm-${paw} .pad`)! });
+    const armOf = (paw: Paw) => ({ limb: this.svg.querySelector<SVGPathElement>(`.arm-${paw} .limb`)!, shade: this.svg.querySelector<SVGLinearGradientElement>(`.arm-${paw} .shade`)!, pad: this.svg.querySelector<SVGGElement>(`.arm-${paw} .pad`)! });
     this.arms = { left: armOf("left"), right: armOf("right") };
     this.twitchEars();
   }
@@ -362,6 +373,7 @@ export class CatView {
     };
     for (const [name, value] of Object.entries(vars)) this.svg.style.setProperty(`--${name}`, value);
     this.svg.dataset.pattern = skin.pattern;
+    this.pointed = skin.pattern === "pointed";
     this.svg.dataset.marks = (skin.marks ?? []).join(" ");
   }
 
@@ -435,12 +447,13 @@ export class CatView {
       // the paw lifts while travelling and lands on the target: an arc, not a slide
       const lift = Math.min(6, Math.hypot(target.x - this.paws[paw].x, target.y - this.paws[paw].y) * 0.35);
       const p = { x: this.paws[paw].x, y: this.paws[paw].y - lift };
-      const { limb, edge } = foreleg(s, p, paw);
-      this.arms[paw].limb.setAttribute("d", limb);
-      this.arms[paw].edge.setAttribute("d", edge);
       const n = (v: number) => v.toFixed(1);
-      this.arms[paw].shoulder.setAttribute("cx", n(s.x));
-      this.arms[paw].shoulder.setAttribute("cy", n(s.y + 4));
+      this.arms[paw].limb.setAttribute("d", foreleg(s, p, paw));
+      const { from, span } = this.pointed ? POINTS : SOCK;
+      const along = (t: number) => ({ x: n(s.x + (p.x - s.x) * t), y: n(s.y + (p.y - s.y) * t) });
+      const a = along(from), b = along(from + span);
+      const shade = this.arms[paw].shade;
+      shade.setAttribute("x1", a.x); shade.setAttribute("y1", a.y); shade.setAttribute("x2", b.x); shade.setAttribute("y2", b.y);
       // the paw squashes while it presses, more on a hard Enter
       const slam = pressing && pose.slam;
       const [sx, sy] = slam ? [1.14, 0.7] : pressing ? [1, 0.83] : [0.86, 1];

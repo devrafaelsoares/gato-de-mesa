@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gato de Mesa</title>
+  <meta name="description" content="Um gatinho que digita junto com você.">
+  <link rel="stylesheet" href="cat.css">
+  <style>
+    :root { --bg: #f4efe6; --ink: #2a2522; --muted: #6f665e; --card: #fffdf8; --line: #e2d9cb; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #1d1b19; --ink: #f1ebe2; --muted: #b3a99d; --card: #2a2724; --line: #3d3833; } }
+    html, body { height: auto; overflow: auto; user-select: auto; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, sans-serif; cursor: default; }
+    body:active { cursor: default; }
+    main { max-width: 640px; margin: 0 auto; padding: 24px 16px 40px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    h1 { margin: 0; font-size: 1.6rem; }
+    p { margin: 0; color: var(--muted); text-align: center; }
+    #cat { width: min(92vw, 460px); aspect-ratio: 224 / 222; touch-action: none; }
+    .controls { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); }
+    select, input { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+    #type { width: min(92vw, 420px); box-sizing: border-box; }
+    ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: .95rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Gato de Mesa</h1>
+    <p>Um gatinho que digita junto com você. Esta é a versão para testar no navegador.</p>
+    <div id="cat"></div>
+    <input id="type" type="text" placeholder="Digite aqui (no celular, toque para abrir o teclado)" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="controls">
+      <label>Pelagem <select id="skin"></select></label>
+      <label>Cor do teclado e do mouse <select id="desk"></select></label>
+    </div>
+    <ul>
+      <li>Digite: ele aperta as mesmas teclas, com as duas patas.</li>
+      <li>Mexa o mouse: ele segue com os olhos. Mexa rápido perto da cabeça e ele tenta pegar.</li>
+      <li>Passe o mouse (ou o dedo) várias vezes na cabeça: carinho e ronronar.</li>
+      <li>Deixe parado: depois de um tempo ele boceja e dorme.</li>
+    </ul>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

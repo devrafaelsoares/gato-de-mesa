@@ -33,15 +33,6 @@ const LAYERS: Record<string, { show: string; css?: string; setup?: (svg: SVGSVGE
     show: ".arm-left .pad",
     setup: (svg) => svg.querySelector(".arm-left .pad")!.setAttribute("transform", `translate(${PAW_PARK.x} ${PAW_PARK.y})`),
   },
-  // where a leg may show over the chest: the arm mask's soft bib
-  bib: {
-    show: ".export-bib",
-    setup: (svg) => {
-      const bib = svg.querySelector("#arm-fade path")!.cloneNode() as SVGPathElement;
-      bib.setAttribute("class", "export-bib");
-      svg.querySelector(".breath")!.append(bib);
-    },
-  },
   zzz: { show: ".zzz", css: ".zzz { display: inline !important; }" },
   heart: { show: ".heart", css: ".heart { display: inline !important; }" },
 };

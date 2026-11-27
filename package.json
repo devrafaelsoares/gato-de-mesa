@@ -9,7 +9,8 @@
     "start": "npm run build && electron .",
     "typecheck": "tsc --noEmit",
     "dist": "npm run build && electron-builder",
-    "sprites": "esbuild tools/export-sprites/page.ts --bundle --format=iife --outfile=tools/export-sprites/page.js && electron tools/export-sprites/main.cjs"
+    "sprites": "esbuild tools/export-sprites/page.ts --bundle --format=iife --outfile=tools/export-sprites/page.js && electron tools/export-sprites/main.cjs",
+    "web": "esbuild src/web/main.ts --bundle --minify --format=iife --target=es2020 --outfile=site/app.js && cp static/web/index.html static/cat.css site/"
   },
   "devDependencies": {
     "electron": "^33.2.0",

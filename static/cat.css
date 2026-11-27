@@ -36,8 +36,9 @@ svg[data-petting="true"] .head { transform: translateY(-2px) rotate(5deg); }
 .ear-right { transform-origin: 124px 52px; }
 .ear-left.twitch { transform: rotate(-12deg); }
 .ear-right.twitch { transform: rotate(12deg); }
-svg[data-petting="true"] .ear-left { transform: rotate(-16deg) translateY(3px); }
-svg[data-petting="true"] .ear-right { transform: rotate(16deg) translateY(3px); }
+/* ears only tilt a little: turned far out they flatten the head */
+svg[data-petting="true"] .ear-left { transform: rotate(-7deg) translateY(1px); }
+svg[data-petting="true"] .ear-right { transform: rotate(7deg) translateY(1px); }
 
 /* Eyes: soft blink, pupils follow and dilate when excited */
 .eye-open { transform-box: fill-box; transform-origin: center; transition: transform 90ms ease-in, opacity 0s 90ms; }
@@ -50,9 +51,6 @@ svg[data-eyes="sleepy"] .eye-open { transform: scaleY(.45); }
 svg[data-excited="true"] .pupil ellipse { transform: scale(1.3); }
 
 /* Forelegs: drawn from code, shoulder to paw */
-.limb { stroke: none; }
-/* a soft edge so a white leg still reads against a white chest */
-.limb-edge { fill: none; stroke: var(--seam); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .pad { stroke: rgba(0,0,0,.16); stroke-width: .8; }
 
 /* Tail: lazy sway, quick wag when excited */
@@ -120,9 +118,10 @@ svg[data-excited="true"] .whiskers-r { transform: rotate(5deg); animation: none;
 
 /* Hunting: crouch low, ears forward and flat, tail twitching */
 .lean > .breath { transition: transform .2s ease-out; }
-svg[data-hunting="true"] .breath { animation: none; transform: translateY(2px) scale(1.01, .985); }
-svg[data-hunting="true"] .ear-left { transform: rotate(-22deg) translateY(4px); }
-svg[data-hunting="true"] .ear-right { transform: rotate(22deg) translateY(4px); }
+/* hunting: a slight lean forward, never squashed; ears pricked forward */
+svg[data-hunting="true"] .breath { animation: none; transform: translateY(1px); }
+svg[data-hunting="true"] .ear-left { transform: rotate(4deg); }
+svg[data-hunting="true"] .ear-right { transform: rotate(-4deg); }
 svg[data-hunting="true"] .tail-wag { animation-duration: .35s; }
 
 /* A wink: one eye closes, the other stays open */
@@ -132,8 +131,8 @@ svg[data-wink="L"] .eye-L .eye-line, svg[data-wink="R"] .eye-R .eye-line { opaci
 /* Picked up: wide eyes, tiny pupils, ears back, tail and feet hanging */
 svg[data-dragging="true"] .eye-open { transform: scale(1.12); }
 svg[data-dragging="true"] .pupil { transform: scale(.6); }
-svg[data-dragging="true"] .ear-left { transform: rotate(-20deg); }
-svg[data-dragging="true"] .ear-right { transform: rotate(20deg); }
+svg[data-dragging="true"] .ear-left { transform: rotate(-10deg); }
+svg[data-dragging="true"] .ear-right { transform: rotate(10deg); }
 svg[data-dragging="true"] .tail { animation: none; transform: rotate(28deg); }
 svg[data-dragging="true"] .feet { transform: translateY(5px); transition: transform .2s; }
 .feet { transition: transform .2s; }

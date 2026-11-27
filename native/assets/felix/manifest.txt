@@ -2,14 +2,14 @@ scale 2
 origin -24 0
 tail 123.00 104.50
 torso 55.00 84.00
-feet 45.50 158.00
+feet 52.50 161.00
 ear-left 58.00 14.00
 ear-right 104.00 14.00
 head-base 52.00 35.00
 head-shape 58.00 35.00
 face 82.00 39.00
 nose 96.00 77.00
-mouth 92.00 81.00
+mouth 82.00 81.00
 yawn 95.50 81.00
 whiskers-l 51.50 74.50
 whiskers-r 110.50 74.50
@@ -17,7 +17,6 @@ eye-line-L 70.00 61.50
 eye-line-R 108.50 61.50
 eye-happy-L 70.50 62.00
 eye-happy-R 111.00 62.00
-paw -11.00 -5.00
-bib 69.00 91.00
+paw -11.00 -6.50
 zzz 140.50 32.00
 heart 94.00 19.50

@@ -4,3 +4,4 @@ release/
 native/build/
 native/out/
 *.pam
+site/
