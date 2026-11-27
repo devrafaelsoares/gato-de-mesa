@@ -1,0 +1,27 @@
+# Builds the Windows installer on a real Windows machine (the native
+# keyboard hook must be compiled there) and signs it when a certificate
+# is configured. Signed builds are what keep antivirus and SmartScreen quiet.
+name: release
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npm run build
+      # CSC_LINK: the .pfx certificate (base64), CSC_KEY_PASSWORD: its password.
+      # Without them the installer is built unsigned.
+      - run: npx electron-builder --win nsis --publish never
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gato-de-mesa-windows
+          path: release/*.exe

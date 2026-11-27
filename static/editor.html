@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>Criar pelagem</title>
+  <link rel="stylesheet" href="cat.css">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body class="editor">
+  <div id="preview"></div>
+  <form>
+    <h1>Criar pelagem</h1>
+    <label>Nome<input name="name" maxlength="24" required></label>
+    <label>Padrão<select name="pattern"></select></label>
+    <div class="colors"></div>
+    <button type="submit">Salvar e usar</button>
+  </form>
+  <script src="../dist/editor.js"></script>
+</body>
+</html>

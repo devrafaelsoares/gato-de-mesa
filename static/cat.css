@@ -1,0 +1,142 @@
+html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; user-select: none; }
+body { cursor: grab; }
+body:active { cursor: grabbing; }
+body.green { background: #00b140; }
+#cat, #cat svg, #preview svg { width: 100%; height: 100%; display: block; }
+#cat svg { animation: enter .6s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes enter { from { transform: translateY(12px) scale(.94); opacity: 0; } }
+svg * { transform-box: view-box; }
+
+/* Coat patterns: only the active one is drawn */
+.p-tuxedo, .p-bicolor, .p-calico, .p-tabby, .p-pointed { display: none; }
+svg[data-pattern="tuxedo"] .p-tuxedo, svg[data-pattern="bicolor"] .p-bicolor, svg[data-pattern="calico"] .p-calico,
+svg[data-pattern="tabby"] .p-tabby, svg[data-pattern="pointed"] .p-pointed { display: inline; }
+
+/* Marks: extra details a coat can switch on */
+.m-blaze, .m-mustache, .m-fluffy, .m-frosted { display: none; }
+svg[data-marks~="blaze"] .m-blaze, svg[data-marks~="mustache"] .m-mustache, svg[data-marks~="fluffy"] .m-fluffy,
+svg[data-marks~="frosted"] .m-frosted { display: inline; }
+/* long fur: a bushy tail */
+.tail-long, svg[data-marks~="fluffy"] .tail-short { display: none; }
+svg[data-marks~="fluffy"] .tail-long { display: inline; }
+
+/* Body: breathes (it leans towards the mouse from code) */
+.breath { transform-origin: 100px 172px; animation: breathe 3.6s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.012, 1.024); } }
+svg[data-sleeping="true"] .breath { animation-duration: 5.5s; }
+
+/* Head follows the pointer, droops asleep, leans into petting */
+.head { transform-origin: 100px 104px; transition: transform .35s cubic-bezier(.2, .8, .3, 1);
+  transform: translate(var(--hx, 0px), var(--hy, 0px)) rotate(var(--tilt, 0deg)); }
+svg[data-sleeping="true"] .head { transform: translateY(5px) rotate(-6deg); }
+svg[data-petting="true"] .head { transform: translateY(-2px) rotate(5deg); }
+.face-shift { transform: translate(var(--fx, 2.5px), var(--fy, 0px)); transition: transform .35s cubic-bezier(.2, .8, .3, 1); }
+.ear { transition: transform .12s ease-out; }
+.ear-left { transform-origin: 76px 52px; }
+.ear-right { transform-origin: 124px 52px; }
+.ear-left.twitch { transform: rotate(-12deg); }
+.ear-right.twitch { transform: rotate(12deg); }
+svg[data-petting="true"] .ear-left { transform: rotate(-16deg) translateY(3px); }
+svg[data-petting="true"] .ear-right { transform: rotate(16deg) translateY(3px); }
+
+/* Eyes: soft blink, pupils follow and dilate when excited */
+.eye-open { transform-box: fill-box; transform-origin: center; transition: transform 90ms ease-in, opacity 0s 90ms; }
+.eye-line, .eye-happy { fill: none; stroke-width: 2; stroke-linecap: round; opacity: 0; transition: opacity 90ms; }
+svg[data-eyes="closed"] .eye-open, svg[data-eyes="happy"] .eye-open { transform: scaleY(.05); opacity: 0; }
+svg[data-eyes="closed"] .eye-line, svg[data-eyes="happy"] .eye-happy { opacity: 1; }
+svg[data-eyes="sleepy"] .eye-open { transform: scaleY(.45); }
+.pupil { transition: transform 90ms linear; transform: translate(var(--px, 0px), var(--py, 0px)); }
+.pupil ellipse { transform-box: fill-box; transform-origin: center; transition: transform .3s; }
+svg[data-excited="true"] .pupil ellipse { transform: scale(1.3); }
+
+/* Forelegs: drawn from code, shoulder to paw */
+.limb { stroke: none; }
+/* a soft edge so a white leg still reads against a white chest */
+.limb-edge { fill: none; stroke: var(--seam); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.pad { stroke: rgba(0,0,0,.16); stroke-width: .8; }
+
+/* Tail: lazy sway, quick wag when excited */
+.tail, .tail-wag { transform-origin: 136px 162px; }
+.tail { animation: sway 3.2s ease-in-out infinite; }
+@keyframes sway { 50% { transform: rotate(9deg); } }
+svg[data-excited="true"] .tail-wag { animation: wag .35s ease-in-out infinite; }
+@keyframes wag { 50% { transform: rotate(-8deg); } }
+
+/* Keyboard: shiny caps, accent keys, lock lights */
+.cap-top { fill: url(#cap-shine); transition: fill 70ms, transform 70ms; }
+.cap-side { fill: #c9c0ae; }
+.cap.accent .cap-top { fill: #f3c77a; }
+.cap.accent .cap-side { fill: #c99543; }
+.cap.down .cap-top { fill: #f29b3b; transform: translateY(1.1px); }
+.led { fill: #6b6b70; }
+svg[data-num="true"] .led-num, svg[data-caps="true"] .led-caps { fill: #7dffa0; }
+
+/* Mouse: the pressed button lights up, the wheel rolls */
+.mb { fill: transparent; transition: fill 60ms; }
+svg[data-button="left"] .mb-left, svg[data-button="right"] .mb-right { fill: rgba(242, 155, 59, .85); }
+.wheel { fill: #55565c; transition: fill 60ms; }
+svg[data-button="middle"] .wheel, svg[data-scroll="1"] .wheel, svg[data-scroll="-1"] .wheel { fill: #f29b3b; }
+svg[data-scroll="1"] .wheel-ridges { animation: roll-up .18s linear infinite; }
+svg[data-scroll="-1"] .wheel-ridges { animation: roll-down .18s linear infinite; }
+@keyframes roll-up { to { transform: translateY(-1.5px); } }
+@keyframes roll-down { to { transform: translateY(1.5px); } }
+
+/* Devices in use: a touchpad replaces the mouse */
+.touchpad, svg[data-pointer="touchpad"] .mouse { display: none; }
+svg[data-pointer="touchpad"] .touchpad { display: inline; }
+
+/* Extras */
+.bubble rect { fill: #fff; stroke: #222; stroke-width: 1; }
+.bubble text { font: 700 8px system-ui, sans-serif; fill: #222; }
+.bubble { animation: rise 650ms ease-out forwards; }
+@keyframes rise { to { transform: translateY(-16px); opacity: 0; } }
+.zzz, .heart { display: none; font: 700 14px system-ui, sans-serif; fill: #8a8f99; }
+.heart { fill: #e0566b; }
+svg[data-sleeping="true"] .zzz { display: inline; animation: float 2.4s ease-in-out infinite; }
+svg[data-petting="true"] .heart { display: inline; animation: float 1s ease-out infinite; }
+@keyframes float { 50% { transform: translateY(-5px); opacity: .6; } }
+
+/* Mouth opens wide in a yawn, the body stretches up */
+.yawn { display: none; }
+svg[data-yawning="true"] .yawn { display: inline; animation: yawn 3s ease-in-out; transform-box: fill-box; transform-origin: top; }
+svg[data-yawning="true"] .mouth { display: none; }
+svg[data-yawning="true"] .breath { animation: stretch 3s ease-in-out; }
+@keyframes yawn { 0% { transform: scaleY(.2); } 40%, 70% { transform: scale(1.1, 1.3); } 100% { transform: scaleY(.2); } }
+@keyframes stretch { 40%, 70% { transform: scale(1.03, 1.06); } }
+
+/* Enter hit hard: the keyboard thumps */
+svg[data-slam="true"] .keyboard { animation: thump .26s ease-out; }
+@keyframes thump { 30% { transform: translateY(1.6px) scaleY(.985); } }
+
+/* Whiskers flick now and then, spread when excited */
+.whiskers-l { transform-origin: 88px 90px; animation: whisk-l 7s ease-in-out infinite; }
+.whiskers-r { transform-origin: 112px 90px; animation: whisk-r 7s ease-in-out infinite 1.3s; }
+@keyframes whisk-l { 0%, 90%, 100% { transform: none; } 94% { transform: rotate(6deg); } }
+@keyframes whisk-r { 0%, 90%, 100% { transform: none; } 94% { transform: rotate(-6deg); } }
+svg[data-excited="true"] .whiskers-l { transform: rotate(-5deg); animation: none; }
+svg[data-excited="true"] .whiskers-r { transform: rotate(5deg); animation: none; }
+
+/* Long-haired coats get tufted edges */
+
+/* Hunting: crouch low, ears forward and flat, tail twitching */
+.lean > .breath { transition: transform .2s ease-out; }
+svg[data-hunting="true"] .breath { animation: none; transform: translateY(2px) scale(1.01, .985); }
+svg[data-hunting="true"] .ear-left { transform: rotate(-22deg) translateY(4px); }
+svg[data-hunting="true"] .ear-right { transform: rotate(22deg) translateY(4px); }
+svg[data-hunting="true"] .tail-wag { animation-duration: .35s; }
+
+/* A wink: one eye closes, the other stays open */
+svg[data-wink="L"] .eye-L .eye-open, svg[data-wink="R"] .eye-R .eye-open { transform: scaleY(.05); opacity: 0; }
+svg[data-wink="L"] .eye-L .eye-line, svg[data-wink="R"] .eye-R .eye-line { opacity: 1; }
+
+/* Picked up: wide eyes, tiny pupils, ears back, tail and feet hanging */
+svg[data-dragging="true"] .eye-open { transform: scale(1.12); }
+svg[data-dragging="true"] .pupil { transform: scale(.6); }
+svg[data-dragging="true"] .ear-left { transform: rotate(-20deg); }
+svg[data-dragging="true"] .ear-right { transform: rotate(20deg); }
+svg[data-dragging="true"] .tail { animation: none; transform: rotate(28deg); }
+svg[data-dragging="true"] .feet { transform: translateY(5px); transition: transform .2s; }
+.feet { transition: transform .2s; }
+/* Put down: lands on its seat with a soft squash */
+svg.landing .breath { animation: land .38s ease-out; }
+@keyframes land { 0% { transform: translateY(-4px); } 45% { transform: scale(1.04, .94); } 75% { transform: scale(.98, 1.02); } 100% { transform: none; } }

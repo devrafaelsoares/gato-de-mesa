@@ -1,0 +1,60 @@
+{
+  "name": "gato-de-mesa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Um gatinho que vive na sua área de trabalho e digita junto com você",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "npm run build && electron .",
+    "typecheck": "tsc --noEmit",
+    "dist": "npm run build && electron-builder",
+    "sprites": "esbuild tools/export-sprites/page.ts --bundle --format=iife --outfile=tools/export-sprites/page.js && electron tools/export-sprites/main.cjs"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.3"
+  },
+  "optionalDependencies": {
+    "uiohook-napi": "^1.5.4"
+  },
+  "build": {
+    "appId": "dev.soares.gatodemesa",
+    "productName": "Gato de Mesa",
+    "files": [
+      "dist/**",
+      "static/**"
+    ],
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility",
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "publisherName": "Gato de Mesa"
+    },
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "copyright": "Gato de Mesa",
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Gato de Mesa"
+    }
+  }
+}

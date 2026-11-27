@@ -1,0 +1,35 @@
+# Builds the native (C++) cat for Windows and Linux.
+name: native
+on:
+  workflow_dispatch:
+  push:
+    paths: ["native/**", ".github/workflows/native.yml"]
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S native -B native/out -A x64
+      - run: cmake --build native/out --config Release
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory pkg | Out-Null
+          Copy-Item native/out/Release/gato-de-mesa.exe pkg/
+          Copy-Item -Recurse native/assets pkg/assets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gato-de-mesa-windows
+          path: pkg
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libx11-dev libxext-dev
+      - run: make -C native -j4 build/gato-de-mesa
+      - name: Package
+        run: mkdir pkg && cp native/build/gato-de-mesa pkg/ && cp -r native/assets pkg/assets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gato-de-mesa-linux
+          path: pkg
