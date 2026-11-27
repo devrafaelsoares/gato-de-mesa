@@ -82,8 +82,8 @@ double random01() {
   return std::uniform_real_distribution<double>(0, 1)(rng);
 }
 
-void fillUnits(Image& frame, const Path& path, const Mat& m, uint32_t color, const Mask* mask = nullptr) {
-  fill(frame, path.transformed(m), color, mask);
+void fillUnits(Image& frame, const Path& path, const Mat& m, uint32_t color, const Mask* mask = nullptr, const Shader* shader = nullptr) {
+  fill(frame, path.transformed(m), color, mask, shader);
 }
 
 }  // namespace
@@ -356,21 +356,30 @@ void CatRenderer::drawArm(Image& frame, Paw paw, const Mat& body, const Pose& po
     // a rounded shoulder on top
     return Path().polygon(a).ellipse(s.x, s.y + 3, 9.5 + grow, 11 + grow);
   };
-  // the leg grows out of the body in the body's own color and shades into
-  // the paw color along the forearm: no outline, nothing looks glued on
-  const uint32_t pawRgb = gato::pawColor(skin_);
-  const uint32_t top = skin_.pattern == Pattern::Pointed ? skin_.body : pawRgb;
-  fillUnits(frame, leg(0), body, premul(top));
-  if (pawRgb != top) {
-    const Mat inv = body.inverse();
-    const double dx = p.x - s.x, dy = p.y - s.y, len2 = std::max(dx * dx + dy * dy, 1.0);
-    const Mask shade = [&](double x, double y) {
-      const Pt u = inv.apply({x, y});
-      const double t = ((u.x - s.x) * dx + (u.y - s.y) * dy) / len2;
-      return static_cast<float>(smooth((t - 0.3) / 0.5));
-    };
-    fillUnits(frame, leg(0), body, premul(pawRgb), &shade);
-  }
+  // the leg grows out of the body: up top it takes the color of the fur right
+  // behind it, then shades into the paw color along the forearm. No outline,
+  // no shoulder patch, nothing looks glued on.
+  const uint32_t pawColor = premul(gato::pawColor(skin_)), fur = premul(skin_.body);
+  const Mat inv = body.inverse();
+  const Sprite* torso = sprites_.get("torso");
+  const Mat toTorso = torso ? (body * torso->toUnits()).inverse() : Mat();
+  const double dx = p.x - s.x, dy = p.y - s.y, len2 = std::max(dx * dx + dy * dy, 1.0);
+  // white paws end in a crisp sock; Siamese points darken gradually
+  const bool pointed = skin_.pattern == Pattern::Pointed;
+  const double from = pointed ? 0.35 : 0.5, span = pointed ? 0.4 : 0.12;
+  const Shader color = [&](double x, double y) {
+    const Pt u = inv.apply({x, y});
+    const double t = smooth((((u.x - s.x) * dx + (u.y - s.y) * dy) / len2 - from) / span);
+    if (t >= 1) return pawColor;
+    uint32_t behind = fur;
+    if (torso) {
+      const Pt q = toTorso.apply({x, y});
+      const uint32_t c = sampleColor(torso->img, q.x, q.y);
+      behind = mixColor(fur, c | 0xff000000u, (c >> 24) / 255.0);  // the torso's edge blends into fur
+    }
+    return mixColor(behind, pawColor, t);
+  };
+  fillUnits(frame, leg(0), body, 0, nullptr, &color);
 
   // the paw squashes while it presses, more on a hard Enter
   const bool pressing = paw == Paw::Left ? pose.left == LeftPaw::Key : (pose.right == RightPaw::Key || pose.right == RightPaw::Click);

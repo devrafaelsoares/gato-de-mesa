@@ -166,7 +166,7 @@ uint32_t premul(uint32_t rgb, double alpha) {
   return pack(255 * a, ((rgb >> 16) & 255) * a, ((rgb >> 8) & 255) * a, (rgb & 255) * a);
 }
 
-void fill(Image& dst, const Path& path, uint32_t color, const Mask* mask) {
+void fill(Image& dst, const Path& path, uint32_t color, const Mask* mask, const Shader* shader) {
   struct Edge { double x0, y0, x1, y1; int dir; };
   std::vector<Edge> edges;
   double minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
@@ -210,10 +210,24 @@ void fill(Image& dst, const Path& path, uint32_t color, const Mask* mask) {
       float k = std::min(cov[x], 1.f);
       if (k <= 0.f) continue;
       if (mask) k *= (*mask)(x + 0.5, y + 0.5);
-      blend(row[x], color, k);
+      blend(row[x], shader ? (*shader)(x + 0.5, y + 0.5) : color, k);
     }
   }
 }
+
+uint32_t sampleColor(const Image& img, double x, double y) {
+  x -= 0.5;
+  y -= 0.5;
+  const int ix = static_cast<int>(std::floor(x)), iy = static_cast<int>(std::floor(y));
+  auto at = [&](int px, int py) -> uint32_t {
+    if (px < 0 || py < 0 || px >= img.w || py >= img.h) return 0;
+    return img.px[static_cast<size_t>(py) * img.w + px];
+  };
+  const auto fx = static_cast<uint32_t>((x - ix) * 256), fy = static_cast<uint32_t>((y - iy) * 256);
+  return mix256(mix256(at(ix, iy), at(ix + 1, iy), fx), mix256(at(ix, iy + 1), at(ix + 1, iy + 1), fx), fy);
+}
+
+uint32_t mixColor(uint32_t a, uint32_t b, double t) { return mix256(a, b, static_cast<uint32_t>(std::clamp(t, 0.0, 1.0) * 256)); }
 
 Path strokePath(const std::vector<Pt>& pts, double width) {
   Path path;

@@ -60,8 +60,18 @@ using Mask = std::function<float(double x, double y)>;
 
 uint32_t premul(uint32_t rgb, double alpha = 1.0);
 
-/** Fills a path given in device pixels (nonzero rule), 4x vertical + exact horizontal AA */
-void fill(Image& dst, const Path& path, uint32_t color, const Mask* mask = nullptr);
+/** Premultiplied color for a pixel centre in device pixels */
+using Shader = std::function<uint32_t(double x, double y)>;
+
+/** Fills a path given in device pixels (nonzero rule), 4x vertical + exact horizontal AA.
+ *  With a shader, the color comes from it pixel by pixel. */
+void fill(Image& dst, const Path& path, uint32_t color, const Mask* mask = nullptr, const Shader* shader = nullptr);
+
+/** Premultiplied color of an image at a fractional pixel position (bilinear, transparent outside) */
+uint32_t sampleColor(const Image& img, double x, double y);
+
+/** a towards b by t (0..1), premultiplied colors */
+uint32_t mixColor(uint32_t a, uint32_t b, double t);
 
 /** Path outline of a polyline with round joins and caps, in the same space as the points */
 Path strokePath(const std::vector<Pt>& pts, double width);
